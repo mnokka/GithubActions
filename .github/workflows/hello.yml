@@ -15,3 +15,7 @@ jobs:
 
     - name: Print Hello World
       run: echo "Hello World!"
+
+    - name: List files in the repository
+      run: |
+      ls ${{ github.workspace }}
