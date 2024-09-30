@@ -23,3 +23,10 @@ jobs:
       run : |
         echo "The name of the pusher: ${{ github.event.pusher.name }}"
         echo "The email of the pusher: ${{ github.event.pusher.email }}"
+
+    - name: Get Committer's Email
+      id: get_committer_email
+      run: |
+        COMMITTER_EMAIL=$(git log -1 --pretty=format:'%ae')
+        echo "Committer Email: $COMMITTER_EMAIL"
+        echo "committer_email=$COMMITTER_EMAIL" >> $GITHUB_ENV
