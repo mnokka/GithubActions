@@ -35,7 +35,6 @@ jobs:
 
     - name: Print Hello World
       run: echo "Hello World!"
-
     - name: List files in the repository
       run: ls ${{ github.workspace }}
 
@@ -58,3 +57,23 @@ jobs:
         echo "To:${{ env.committer_email }}" >> email.txt
         echo "Your recent commit was pushed to the repository!" >> email.txt
         msmtp --debug -a default ${{ env.committer_email }} < email.txt
+
+
+    - name: Install Mutt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mutt
+
+      - name: Configure Mutt
+        run: |
+          echo "set from = \"${{ secrets.OUTLOOK_USERNAME }}\"" > ~/.muttrc
+          echo "set realname = \"Your Name\"" >> ~/.muttrc
+          echo "set smtp_url = \"smtp://\${{ secrets.OUTLOOK_USERNAME }}@smtp.office365.com:587/\"" >> ~/.muttrc
+          echo "set smtp_pass = \"${{ secrets.OUTLOOK_PASSWORD }}\"" >> ~/.muttrc
+          echo "set ssl_starttls = yes" >> ~/.muttrc
+          echo "set ssl_force_tls = yes" >> ~/.muttrc
+          chmod 600 ~/.muttrc  # Secure the configuration file
+
+       - name: Send Email
+        run: |
+          echo "Your message body" | mutt -s "Your Subject" mika.nokka@unikie.com
