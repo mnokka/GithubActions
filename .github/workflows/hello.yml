@@ -17,5 +17,5 @@ jobs:
       run: echo "Hello World!"
 
     - name: List files in the repository
-      run: |
+      run:
       ls ${{ github.workspace }}
