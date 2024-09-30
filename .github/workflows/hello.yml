@@ -13,6 +13,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Install msmtp
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y msmtp
+
+    - name: Configure msmtp
+      run: |
+        echo "account default" > ~/.msmtprc
+        echo "host smtp.office365.com" >> ~/.msmtprc
+        echo "port 587" >> ~/.msmtprc
+        echo "auth on" >> ~/.msmtprc
+        echo "tls on" >> ~/.msmtprc
+        echo "tls_trust_file /etc/ssl/certs/ca-certificates.crt" >> ~/.msmtprc
+        echo "user ${{ secrets.OUTLOOK_USERNAME }}" >> ~/.msmtprc
+        echo "password ${{ secrets.OUTLOOK_PASSWORD }}" >> ~/.msmtprc
+        echo "from ${{ secrets.OUTLOOK_USERNAME }}" >> ~/.msmtprc
+        echo "logfile ~/.msmtp.log" >> ~/.msmtprc
+        echo "account default : default" >> ~/.msmtprc
+        chmod 600 ~/.msmtprc
+
+
     - name: Print Hello World
       run: echo "Hello World!"
 
