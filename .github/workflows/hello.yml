@@ -20,7 +20,6 @@ jobs:
       run: ls ${{ github.workspace }}
 
     - name: Send Email to Committer
-      env:
-        COMMITTER_EMAIL: ${{ env.committer_email }}
-      run: |
-        echo "TRY: Sending email to $COMMITTER_EMAIL"
+      run : |
+        echo "The name of the pusher: ${{ github.event.pusher.name }}"
+        echo "The email of the pusher: ${{ github.event.pusher.email }}"
