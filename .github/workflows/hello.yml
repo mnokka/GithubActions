@@ -56,6 +56,6 @@ jobs:
 
       run: |
         echo "Subject: Commit Notification" > email.txt
-        echo "To:$committer_email" >> email.txt
+        echo "To:${{ env.committer_email }}" >> email.txt
         echo "Your recent commit was pushed to the repository!" >> email.txt
         msmtp --debug -a default $COMMITTER_EMAIL < email.txt
