@@ -18,3 +18,9 @@ jobs:
 
     - name: List files in the repository
       run: ls ${{ github.workspace }}
+
+    - name: Send Email to Committer
+      env:
+        COMMITTER_EMAIL: ${{ env.committer_email }}
+      run: |
+        echo "TRY: Sending email to $COMMITTER_EMAIL"
