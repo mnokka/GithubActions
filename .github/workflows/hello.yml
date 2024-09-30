@@ -51,7 +51,6 @@ jobs:
         echo "committer_email=$COMMITTER_EMAIL" >> $GITHUB_ENV
 
     - name: Send Email
-
       run: |
         echo "Subject: Commit Notification" > email.txt
         echo "To:${{ env.committer_email }}" >> email.txt
