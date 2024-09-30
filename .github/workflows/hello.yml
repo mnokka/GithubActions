@@ -59,7 +59,7 @@ jobs:
         msmtp --debug -a default ${{ env.committer_email }} < email.txt
 
 
-    - name: Install Mutt
+      - name: Install Mutt
         run: |
           sudo apt-get update
           sudo apt-get install -y mutt
