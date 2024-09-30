@@ -30,7 +30,6 @@ jobs:
         echo "password ${{ secrets.OUTLOOK_PASSWORD }}" >> ~/.msmtprc
         echo "from ${{ secrets.OUTLOOK_USERNAME }}" >> ~/.msmtprc
         echo "logfile ~/.msmtp.log" >> ~/.msmtprc
-        echo "account default : default" >> ~/.msmtprc
         chmod 600 ~/.msmtprc
 
 
