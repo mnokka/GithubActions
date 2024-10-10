@@ -1,4 +1,4 @@
-name: Hello World Action
+name: Send Email using Python
 
 on:
   push:
@@ -6,72 +6,29 @@ on:
       - main
 
 jobs:
-  hello_world_job:
+  send-email:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install msmtp
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y msmtp
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: Configure msmtp
-        run: |
-          echo "account default" > ~/.msmtprc
-          echo "host smtp.office365.com" >> ~/.msmtprc
-          echo "port 587" >> ~/.msmtprc
-          echo "auth on" >> ~/.msmtprc
-          echo "tls on" >> ~/.msmtprc
-          echo "tls_trust_file /etc/ssl/certs/ca-certificates.crt" >> ~/.msmtprc
-          echo "user ${{ secrets.OUTLOOK_USERNAME }}" >> ~/.msmtprc
-          echo "password ${{ secrets.OUTLOOK_PASSWORD }}" >> ~/.msmtprc
-          echo "from ${{ secrets.OUTLOOK_USERNAME }}" >> ~/.msmtprc
-          echo "logfile ~/.msmtp.log" >> ~/.msmtprc
-          chmod 600 ~/.msmtprc
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install msal
 
-      - name: Print Hello World
-        run: echo "Hello World!"
-
-      - name: List files in the repository
-        run: ls ${{ github.workspace }}
-
-      - name: TRY Send Email to Committer
-        run: |
-          echo "The name of the pusher: ${{ github.event.pusher.name }}"
-          echo "The email of the pusher: ${{ github.event.pusher.email }}"
-
-      - name: TRY Get Committer's Email
-        id: get_committer_email
-        run: |
-          COMMITTER_EMAIL=$(git log -1 --pretty=format:'%ae')
-          echo "Committer Email: $COMMITTER_EMAIL"
-          echo "committer_email=$COMMITTER_EMAIL" >> $GITHUB_ENV
-
-      - name: Send Email
-        run: |
-          echo "Subject: Commit Notification" > email.txt
-          echo "To: ${{ env.committer_email }}" >> email.txt
-          echo "Your recent commit was pushed to the repository!" >> email.txt
-
-
-      - name: Install Mutt
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mutt
-
-      - name: Configure Mutt
-        run: |
-          echo "set from = \"${{ secrets.OUTLOOK_USERNAME }}\"" > ~/.muttrc
-          echo "set realname = \"Your Name\"" >> ~/.muttrc
-          echo "set smtp_url = \"smtp://\${{ secrets.OUTLOOK_USERNAME }}@smtp.office365.com:587/\"" >> ~/.muttrc
-          echo "set smtp_pass = \"${{ secrets.OUTLOOK_PASSWORD }}\"" >> ~/.muttrc
-          echo "set ssl_starttls = yes" >> ~/.muttrc
-          echo "set ssl_force_tls = yes" >> ~/.muttrc
-          chmod 600 ~/.muttrc  # Secure the configuration file
-
-      - name: Send Email using Mutt
-        run: |
-          echo "Your message body" | mutt -s "Your Subject" mika.nokka@unikie.com
+    - name: Run email script
+      env:
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+        TENANT_ID: ${{ secrets.TENANT_ID }}
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        TO_EMAIL: ${{ secrets.TO_EMAIL }}
+      run: |
+        python scripts/send_email.py
