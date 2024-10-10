@@ -1,51 +1,72 @@
+import requests
 import os
-import msal
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
-# Get credentials and email details from environment variables
+# Function to acquire the OAuth2 token
+def get_access_token(tenant_id, client_id, client_secret, scope):
+    token_url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
+
+    token_data = {
+        'grant_type': 'client_credentials',
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'scope': scope,
+    }
+
+    token_r = requests.post(token_url, data=token_data)
+    token = token_r.json().get('access_token')
+
+    if token:
+        print("Access token acquired!")
+        return token
+    else:
+        print("Error acquiring access token:", token_r.text)
+        return None
+
+# Function to send the email using Microsoft Graph API
+def send_email(access_token, from_email, to_email, subject, body):
+    endpoint = f"https://graph.microsoft.com/v1.0/users/{from_email}/sendMail"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    email_data = {
+        "message": {
+            "subject": subject,
+            "body": {
+                "contentType": "Text",
+                "content": body
+            },
+            "toRecipients": [
+                {
+                    "emailAddress": {
+                        "address": to_email
+                    }
+                }
+            ]
+        }
+    }
+
+    response = requests.post(endpoint, headers=headers, json=email_data)
+
+    if response.status_code == 202:
+        print("Email sent successfully!")
+    else:
+        print("Error sending email:", response.status_code, response.text)
+
+# Use environment variables for sensitive values
+tenant_id = os.getenv('TENANT_ID')
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
-tenant_id = os.getenv('TENANT_ID')
 from_email = os.getenv('FROM_EMAIL')
 to_email = os.getenv('TO_EMAIL')
+scope = 'https://graph.microsoft.com/.default'
+subject = "Test Email from GitHub Actions"
+body = "This is a test email sent via Microsoft Graph API."
 
-authority_url = f'https://login.microsoftonline.com/{tenant_id}/'
-scope = ['https://graph.microsoft.com/.default']
+# Get the access token
+access_token = get_access_token(tenant_id, client_id, client_secret, scope)
 
-# SMTP settings
-smtp_host = 'smtp.office365.com'
-smtp_port = 587
-
-# Get OAuth2 token
-def get_oauth2_token():
-    app = msal.ConfidentialClientApplication(
-        client_id,
-        authority=authority_url,
-        client_credential=client_secret,
-    )
-
-    result = app.acquire_token_for_client(scopes=scope)
-    if 'access_token' in result:
-        return result['access_token']
-    else:
-        raise Exception("Failed to acquire token")
-
-# Send email
-def send_email(subject, body):
-    token = get_oauth2_token()
-
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.starttls()
-        server.login(from_email, token)
-        server.sendmail(from_email, to_email, msg.as_string())
-
-# Example usage
-send_email('Test Email', 'This is  a test email  sent from GitHub Actions using Python.')
+# Send the email if the token was acquired successfully
+if access_token:
+    send_email(access_token, from_email, to_email, subject, body)
