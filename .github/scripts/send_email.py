@@ -48,4 +48,4 @@ def send_email(subject, body):
         server.sendmail(from_email, to_email, msg.as_string())
 
 # Example usage
-send_email('Test Email', 'This is  a test email sent from GitHub Actions using Python.')
+send_email('Test Email', 'This is  a test email  sent from GitHub Actions using Python.')
