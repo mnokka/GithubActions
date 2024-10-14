@@ -1,0 +1,19 @@
+name: PR Info Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-info:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Get PR Author Info
+      run: |
+        echo "PR author username: ${{ github.event.pull_request.user.login }}"
+        echo "PR author email: ${{ github.event.pull_request.user.email }}"
+        echo "PR URL: ${{ github.event.pull_request.html_url }}"
