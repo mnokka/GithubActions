@@ -12,17 +12,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Get PR Commit Author Email via GitHub API
+    - name: Get PR Last Commit Author Email via GitHub API
       run: |
         PR_NUMBER=${{ github.event.pull_request.number }}
         REPO=${{ github.repository }}
         COMMITS_URL="https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/commits"
 
-        # Hae commitit ja käytä jq:ta ensimmäisen commitin tekijän sähköpostin saamiseksi
-        EMAIL=$(curl -s $COMMITS_URL | jq -r '.[0].commit.author.email')
+        # Hae commitit ja käytä jq:ta viimeisen commitin tekijän sähköpostin saamiseksi
+        EMAIL=$(curl -s $COMMITS_URL | jq -r '.[-1].commit.author.email')
 
         if [ "$EMAIL" != "null" ]; then
-          echo "PR commit author email: $EMAIL"
+          echo "PR last commit author email: $EMAIL"
         else
-          echo "Email not found for PR commit author"
+          echo "Email not found for PR last commit author"
         fi
