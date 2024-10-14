@@ -1,4 +1,4 @@
-name: PR Info Test
+name: Get PR Commit Author Email
 
 on:
   pull_request:
@@ -12,19 +12,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Get PR Author Info
+    - name: Get PR Commit Author Email via GitHub API
       run: |
-        echo "PR author username: ${{ github.event.pull_request.user.login }}"
-        echo "PR author email: ${{ github.event.pull_request.user.email }}"
-        echo "PR URL: ${{ github.event.pull_request.html_url }}"
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        REPO=${{ github.repository }}
+        COMMITS_URL="https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/commits"
 
-    - name: Get PR Author Email via GitHub API
-      run: |
-        PR_AUTHOR=${{ github.event.pull_request.user.login }}
-        EMAIL=$(curl -s https://api.github.com/users/$PR_AUTHOR | jq -r '.email')
+        # Hae commitit ja käytä jq:ta ensimmäisen commitin tekijän sähköpostin saamiseksi
+        EMAIL=$(curl -s $COMMITS_URL | jq -r '.[0].commit.author.email')
 
         if [ "$EMAIL" != "null" ]; then
-          echo "PR author email from API: $EMAIL"
+          echo "PR commit author email: $EMAIL"
         else
-          echo "Email not found for PR author $PR_AUTHOR"
+          echo "Email not found for PR commit author"
         fi
