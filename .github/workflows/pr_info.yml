@@ -17,3 +17,14 @@ jobs:
         echo "PR author username: ${{ github.event.pull_request.user.login }}"
         echo "PR author email: ${{ github.event.pull_request.user.email }}"
         echo "PR URL: ${{ github.event.pull_request.html_url }}"
+
+        - name: Get PR Author Email via GitHub API
+        run: |
+          PR_AUTHOR=${{ github.event.pull_request.user.login }}
+          EMAIL=$(curl -s https://api.github.com/users/$PR_AUTHOR | jq -r '.email')
+
+          if [ "$EMAIL" != "null" ]; then
+            echo "PR author email from API: $EMAIL"
+          else
+            echo "Email not found for PR author $PR_AUTHOR"
+          fi
