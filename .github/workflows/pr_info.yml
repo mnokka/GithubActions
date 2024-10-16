@@ -1,4 +1,4 @@
-name: PR Info Test
+name: Get PR Commit Author Email
 
 on:
   pull_request:
@@ -12,8 +12,31 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Get PR Author Info
+    - name: Get PR Last Commit Author Email via GitHub API
+      id: get_email
       run: |
-        echo "PR author username: ${{ github.event.pull_request.user.login }}"
-        echo "PR author email: ${{ github.event.pull_request.user.email }}"
-        echo "PR URL: ${{ github.event.pull_request.html_url }}"
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        REPO=${{ github.repository }}
+        COMMITS_URL="https://api.github.com/repos/$REPO/pulls/$PR_NUMBER/commits"
+
+        # Hae commitit ja käytä jq:ta viimeisen commitin tekijän sähköpostin saamiseksi
+        EMAIL=$(curl -s $COMMITS_URL | jq -r '.[-1].commit.author.email')
+
+        if [ "$EMAIL" != "null" ]; then
+          echo "PR last commit author email: $EMAIL"
+          echo "PR_AUTHOR_EMAIL=$EMAIL" >> $GITHUB_ENV  # Set the email as an environment variable
+        else
+          echo "Email not found for PR last commit author"
+          echo "PR_AUTHOR_EMAIL=not_found" >> $GITHUB_ENV  # Set a placeholder value
+        fi
+
+    - name: Send Email Notification
+      run: |
+        # Here, you can call your email-sending script and access the PR_AUTHOR_EMAIL
+        python .github/scripts/send_to_env_email.py  # Assuming your email sending script is named send_email.py
+      env:
+        TENANT_ID: ${{ secrets.TENANT_ID }}
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        PR_AUTHOR_EMAIL: ${{ env.PR_AUTHOR_EMAIL }}  # Pass the email to the script
